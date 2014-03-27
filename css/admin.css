@@ -41,8 +41,8 @@ h2.cmlwoo-nav-tab {
 	  box-shadow: 1px -1px 2px rgba(0, 0, 0, 0.2 );
 	}
 
-.cmlwoo-switch > img {
-  opacity: 0.6;
+.cmlwoo-nav-tab img {
+  opacity: 0.5;
   padding-right: 5px;
 }
 
