@@ -47,5 +47,5 @@ h2.cmlwoo-nav-tab {
 }
 
 .cmlwoo-editor-wrapper .mce-edit-area {
-	height: 433px;
+	height: 433px !important;
 }

@@ -142,15 +142,16 @@ EOT;
 				echo '</div>';
 			}
 
+			$img = CMLLanguage::get_flag_img( $lang->id );
+
 $tabs .= <<< EOT
 	<a id="cmlwoo-editor-$lang->id" class="nav-tab $active cmlwoo-switch" onclick="CmlWoo.switchTo( $lang->id, '' );">
-		<img class="tipsy-s" title="$label" src="$img" />
+		$img
 		$lang->cml_language
 	</a>
 EOT;
 
 //short description
-$img = CMLLanguage::get_flag_img( $lang->id );
 $short_tabs .= <<< EOT
 	<a id="cmlwoo-short-editor-$lang->id" class="nav-tab $active cmlwoo-short-switch" onclick="CmlWoo.switchTo( $lang->id, 'short-' )">
 		$img

@@ -42,6 +42,7 @@ var CmlWoo = {
 		jQuery( '.cmlwoo-' + type + 'editor-wrapper' ).addClass( 'cml-hidden' );
 		jQuery( '.cmlwoo-' + type + 'editor-' + index ).removeClass( 'cml-hidden' );
 
+		//Show default editor
 		if( index == ceceppaml_admin.default_id ) {
 			jQuery( '#cmlwoo-' + type + 'editor' ).addClass( 'cml-hidden' );
 
@@ -51,6 +52,7 @@ var CmlWoo = {
 				jQuery( '#wp-excerpt-wrap' ).removeClass( 'cml-hidden' );
 			}
 		} else {
+			//My editor
 			if( type == "" ) {
 				jQuery( '#postdivrich' ).addClass( 'cml-hidden' );
 			} else {
@@ -58,5 +60,8 @@ var CmlWoo = {
 			}
 			jQuery( '#cmlwoo-' + type + 'editor.cmlwoo-editor-' + index ).removeClass( 'cml-hidden' );
 		}
+
+		//Resize iframe
+		jQuery( '#cmlwoo-editor iframe' ).height( '433' );
 	}
 }
