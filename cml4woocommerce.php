@@ -18,8 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'CML_WOOCOMMERCE_PATH', trailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'CML_WOOCOMMERCE_URL', trailingslashit( plugin_dir_url( __FILE__ ) ) );
 
-require_once( CML_WOOCOMMERCE_PATH . "admin.php" );
-require_once( CML_WOOCOMMERCE_PATH . "frontend.php" );
+require_once( CML_WOOCOMMERCE_PATH . "admin/admin.php" );
+require_once( CML_WOOCOMMERCE_PATH . "frontend/frontend.php" );
 
 class Cml4Woocommerce {
 	public function __construct() {
