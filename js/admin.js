@@ -32,6 +32,20 @@ jQuery( document ).ready( function( $ ) {
 	//move short description after #wp-excerpt-wrap
 	$( '.cmlwoo-short-editor-wrapper' ).insertAfter( $( '#wp-excerpt-wrap' ) );
 	$( 'h2.cmlwoo-short-nav-tab' ).insertBefore( $( '#wp-excerpt-wrap' ) ).removeClass( 'cml-hidden' );
+    
+    //Move fields in permalink options
+    $( '.cmlwoo_category_slug' ).insertAfter( $( 'input[name="woocommerce_product_category_slug"]' ) );
+    $( '.cmlwoo_category_slug' ).removeClass( 'cml-hidden' );
+
+    $( '.cmlwoo_tag_slug' ).insertAfter( $( 'input[name="woocommerce_product_tag_slug"]' ) );
+    $( '.cmlwoo_tag_slug' ).removeClass( 'cml-hidden' );
+
+    $( '.cmlwoo_attribute_slug' ).insertAfter( $( 'input[name="woocommerce_product_attribute_slug"]' ) );
+    $( '.cmlwoo_attribute_slug' ).removeClass( 'cml-hidden' );
+
+    $( 'th .cml-remove' ).each( function() {
+      $( this ).parents( 'tr' ).remove();
+    });
 });
 
 var CmlWoo = {

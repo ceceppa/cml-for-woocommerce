@@ -33,5 +33,4 @@ if( is_admin() ) {
 } else {
 	$cml4woocommerce = new Cml4WoocommerceFrontend();
 }
-
 ?>
