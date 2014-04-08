@@ -38,6 +38,16 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
 
     //Add language to form, so error will be displayed in current language
     add_action( 'woocommerce_before_checkout_billing_form', array( & $this, 'checkout_form' ), 10 );
+    
+    //Is shop page?
+    add_action( 'cml_is_single_page', array( & $this, 'is_shop_page' ), 10, 2 );
+    add_action( 'cml_get_custom_page_id', array( & $this, 'get_shop_page_id' ), 10, 2 );
+    
+    //translate category url
+    add_filter( 'woocommerce_taxonomy_args_product_cat', array( & $this, 'get_translated_slug' ), 10, 1 );
+    
+    //translate category title in flag link
+    add_filter( 'cml_get_the_link', array( & $this, 'translate_category_link' ), 10, 4 );
   }
 
 	function get_meta( $id = null ) {
@@ -198,7 +208,6 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
   }
     
   function get_translated_slug( $args ) {
-    $lang = CMLLanguage::get_default_id();
     $lang = CMLUtils::_get( "_forced_language_id", CMLLanguage::get_current_id() );
     if( CMLLanguage::is_default( $lang ) ) return $args;
 
@@ -239,6 +248,54 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
 
     return $checkout;
   }
+  
+  //is shop page?
+  function is_shop_page( $is_single, $queried ) {
+    if( isset( $queried->query_var ) &&
+        $queried->query_var == 'product' ) {
+      return true;
+    }
+
+    return $is_single;
+  }
+
+  //tell to cml the shop page id
+  function get_shop_page_id( $id, $queried ) {
+    if( ! $this->is_shop_page( false, $queried ) ) {
+      return $id;
+    }
+    
+    return wc_get_page_id( 'shop' );
+  }
+  
+  function translate_category_link( $link, $attrs, $queried, $lang ) {
+    if( null == $queried || empty( CMLUtils::get_permalink_structure() ) ) return $link;
+    if( ! isset( $queried->taxonomy ) || $queried->taxonomy != "product_cat" ) return $link;
+
+    $permalinks = get_option( "woocommerce_permalinks", array() );
+    if( empty( $permalinks ) ) return $link;
+
+    $c_base = $permalinks[ 'category_base' ];
+    if( empty( $c_base ) ) return $link;
+
+    $home = trailingslashit( CMLUtils::get_home_url( CMLLanguage::get_slug( $lang ) ) );
+    $l = str_replace( $home, "", $link );
+    $l = explode( "/", $l );
+
+    $p = CMLUtils::_get( "_cmlwoo_permalinks", null );
+    if( null == $p ) {
+      $p = get_option( "cmlwoo_permalinks", array() );
+
+      CMLUtils::_set( "cmlwoo_permalinks", $permalinks );
+    }
+
+    $base = @$p[ $lang ][ 'category_base' ];
+    if( empty( $base ) ) $base = $c_base;
+
+    $l[ 0 ] = $base;
+
+    return $home . join( "/", $l );
+  }
 }
 
 /*
@@ -247,6 +304,8 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
  */
 //Translate cart and checkout id
 function cmlwoo_get_translated_page_id( $id ) {
+  if( ! defined( 'CECEPPA_DB_VERSION' ) ) return $id;
+
   if( CMLLanguage::is_default() ) return $id;
 
   $linked = CMLPost::get_translation( CMLLanguage::get_current_id(), $id );

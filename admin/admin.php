@@ -16,7 +16,8 @@ class Cml4WoocommerceAdmin extends Cml4Woocommerce {
   
       //Add addon in "Addons page"
       add_filter( 'cml_addons', array( & $this, 'add_addon' ) );
-  
+      //add_action( 'cml_addon_woocommerce_content', array( & $this, 'addon_content' ) );
+
       //Tell to CML to ingnore woocommerce post types, so "Post data" box will not be displayed
       add_filter( 'cml_manage_post_types', array( & $this, 'remove_woocommerce_types' ) );
   
@@ -74,12 +75,20 @@ EOT;
 	}
 
 	function meta_box() {
+      if( isset( $_GET[ 'update' ] ) ) {
+        $this->update_product_language();
+      }
 ?>
 	  <div id="minor-publishing">
-			<?php _e( 'This addon provide support to Woocommerce', 'cml4woo' ); ?>
-		</div>
+          <?php _e( 'This addon provide support to Woocommerce', 'cml4woo' ); ?>
+
+        <br /><br /><br />
+        <a href="?<?php echo CMLUtils::_get( '_woocommerce_page' ) ?>&update=1">
+          <?php _e( 'Update product language', 'cml4woo' ); ?>
+        </a>
+      </div>
 <?php
-	}
+    }
 
 	//for cml
 	function remove_woocommerce_types( $types ) {
@@ -236,5 +245,19 @@ EOT;
 		$post = get_post( $id );
 		CMLTranslations::delete_text( "_" . $post->post_type . "_" . $post->ID, "_woo_" );
 	}
-}
+    
+    function update_product_language() {
+      $args=array(
+        'post_type' => 'product',
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+       );
+      
+      $posts = get_posts( $args );
+      foreach( $posts as $post ) {
+        $id = $post->ID;
 
+        CMLPost::set_language( 0, $id );
+      }
+    }
+}

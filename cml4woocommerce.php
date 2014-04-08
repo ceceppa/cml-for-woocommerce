@@ -22,10 +22,36 @@ require_once( CML_WOOCOMMERCE_PATH . "admin/admin.php" );
 require_once( CML_WOOCOMMERCE_PATH . "frontend/frontend.php" );
 
 class Cml4Woocommerce {
-	public function __construct() {
-		//Woocommerce post types
-		$this->_post_types = array( 'product', 'product_variation', 'shop_order', 'shop_coupon' );
-	}
+  public function __construct() {
+    //Woocommerce post types
+    $this->_post_types = array( 'product', 'product_variation', 'shop_order', 'shop_coupon' );
+    
+    add_action( 'init', array( & $this, 'rewrite_rules' ), 10 );
+  }
+
+  /*
+   * allow category slug translation in url
+   */
+  function rewrite_rules() {
+    $permalinks = get_option( "cmlwoo_permalinks", array() );
+	$woo = get_option( 'woocommerce_permalinks' );
+
+    foreach( CMLLanguage::get_no_default() as $lang ) {
+      if( ! isset( $permalinks[ $lang->id ] ) ||
+          empty( $permalinks[ $lang->id ][ 'category_base' ] ) ) continue;
+
+      $category = $permalinks[ $lang->id ][ 'category_base' ];
+      if( $category == $woo[ 'category_base' ] ) continue;
+
+      add_rewrite_rule( $category . '/(.+?)/feed/(feed|rdf|rss|rss2|atom)/?$','index.php?product_cat=$matches[1]&feed=$matches[2]', 'top' );
+      add_rewrite_rule( $category . '/(.+?)/(feed|rdf|rss|rss2|atom)/?$','index.php?product_cat=$matches[1]&feed=$matches[2]', 'top' );
+      add_rewrite_rule( $category . '/(.+?)/page/?([0-9]{1,})/?$','index.php?product_cat=$matches[1]&paged=$matches[2]', 'top' );
+      add_rewrite_rule( $category . '/(.+?)/?$','index.php?product_cat=$matches[1]', 'top' );
+    }
+
+    flush_rewrite_rules();
+  }
+
 }
 
 if( is_admin() ) {
