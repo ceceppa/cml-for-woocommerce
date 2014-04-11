@@ -29,14 +29,14 @@ class Cml4WoocommercePermalink {
           array( "lang" => $lang->id )
       );
       
-      add_settings_field(
-          'cmlwoo_product_attribute_slug_' . $lang->id,      	// id
-          '<div class="cml-remove"></div>', 	      // setting title
-          array( $this, 'product_attribute_slug_input' ),  // display callback
-          'permalink',                 				// settings page
-          'optional',                  				// settings section
-          array( "lang" => $lang->id )
-      );
+      //add_settings_field(
+      //    'cmlwoo_product_attribute_slug_' . $lang->id,      	// id
+      //    '<div class="cml-remove"></div>', 	      // setting title
+      //    array( $this, 'product_attribute_slug_input' ),  // display callback
+      //    'permalink',                 				// settings page
+      //    'optional',                  				// settings section
+      //    array( "lang" => $lang->id )
+      //);
     }
   }
   
@@ -85,7 +85,13 @@ class Cml4WoocommercePermalink {
   public function product_tag_slug_input( $args ) {
     $lang = $args[ 'lang' ];
 
-    $permalinks = get_option( 'woocommerce_permalinks' );
+    $permalinks = get_option( "cmlwoo_permalinks", array() );
+    
+    if( empty( $permalinks ) ) {
+      $permalinks = get_option( 'woocommerce_permalinks' );
+    } else {
+      $permalinks = $permalinks[ $args[ 'lang' ] ];
+    }
 ?>
     <div class="cmlwoo_tag_slug cml-hidden">
       <?php echo CMLLanguage::get_flag_img( $lang ) ?>

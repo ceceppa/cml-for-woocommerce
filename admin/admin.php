@@ -12,11 +12,11 @@ class Cml4WoocommerceAdmin extends Cml4Woocommerce {
         new Cml4WoocommercePermalink();
       }
 
+      add_action( 'admin_notices', array( & $this, 'admin_notices' ) );
       add_action( 'admin_init', array( & $this, 'add_meta_box' ) );
   
       //Add addon in "Addons page"
-      add_filter( 'cml_addons', array( & $this, 'add_addon' ) );
-      //add_action( 'cml_addon_woocommerce_content', array( & $this, 'addon_content' ) );
+      add_action( 'cml_register_addons', array( & $this, 'register_addon' ), 10, 1 );
 
       //Tell to CML to ingnore woocommerce post types, so "Post data" box will not be displayed
       add_filter( 'cml_manage_post_types', array( & $this, 'remove_woocommerce_types' ) );
@@ -29,9 +29,21 @@ class Cml4WoocommerceAdmin extends Cml4Woocommerce {
       add_action( 'delete_post', array( & $this, 'delete_meta' ), 10, 1 );
       add_action( 'trash_post', array( & $this, 'delete_meta' ), 10, 1 );
       add_action( 'publish_my_custom_post_type', array( & $this, 'save_translations' ), 10, 2 );
-  
-          //Wp style & script
+
+      //add attributes in "My translations page"
+      add_filter( 'cml_my_translations', array( & $this, 'custom_attributes' ), 10, 1 );
+      add_filter( 'cml_my_translations_hide_default', array( & $this, 'hide_default_lang' ), 10, 1 );
+      add_filter( 'cml_my_translations_label', array( & $this, 'change_label' ), 10, 2 );
+
+      //Wp style & script
       add_action( 'admin_enqueue_scripts', array( & $this, 'enqueue_style' ), 10 );
+
+      //show translate title in product page
+      if( isset( $_GET[ 'post_type' ] ) &&
+         'product' == $_GET[ 'post_type' ] ) {
+
+        add_filter( 'the_title', array( & $this, 'get_translated_title' ), 0, 2 );
+      }
 	}
 
 	function enqueue_style() {
@@ -40,7 +52,7 @@ class Cml4WoocommerceAdmin extends Cml4Woocommerce {
       wp_enqueue_script( 'cmlwoocommerce-admin', CML_WOOCOMMERCE_URL . 'js/admin.js' );
 	}
 
-	function add_addon( $addons ) {
+	function register_addon( & $addons ) {
       $addon = array(
                                   'addon' => 'woocommerce',
                                   'title' => 'Woocommerce',
@@ -65,12 +77,31 @@ echo <<< EOT
 EOT;
         return;
       }
+      
+      if( 'edit.php' == $pagenow &&
+         'product_attributes' == @$_GET[ 'page' ] ) {
+?>
+      <div class="updated">
+        <p>
+<?php
+        printf( __( 'Click <%s>here</a> to translate attributes name', 'cml4woo' ),
+                       'a href="' . admin_url() . 'admin.php?page=ceceppaml-translations-page&tab=_cml4woo_attr" class="button"' );
+?>
+        </p>
+      </div>
+<?php
+      }
 	}
 
 	function add_meta_box() {
-      add_meta_box( 'cml-box-addons', 
+      add_meta_box( 'cml-box-cml4woo-addons', 
                                   __( 'Woocommerce', 'woocommerce' ), 
                                   array( & $this, 'meta_box' ), 
+                                  'cml_box_addons_woocommerce' );
+      
+      add_meta_box( 'cml-box-cml4woo-settings-addons', 
+                                  __( 'Settings', 'cml4woo' ), 
+                                  array( & $this, 'meta_box_settings' ), 
                                   'cml_box_addons_woocommerce' );
 	}
 
@@ -83,9 +114,33 @@ EOT;
           <?php _e( 'This addon provide support to Woocommerce', 'cml4woo' ); ?>
 
         <br /><br /><br />
-        <a href="?<?php echo CMLUtils::_get( '_woocommerce_page' ) ?>&update=1">
+        <a href="<?php echo CMLUtils::_get( '_woocommerce_addon_page' ) ?>&update=1">
           <?php _e( 'Update product language', 'cml4woo' ); ?>
         </a>
+        <br />
+      </div>
+<?php
+    }
+    
+    function meta_box_settings() {
+      if( isset( $_POST[ 'update' ] ) ) {
+        update_option( "cmlwoo_translate_slugs", intval( @$_POST[ 'translate-slugs' ] ) );
+      }
+?>
+	  <div id="minor-publishing">
+        <form method="post">
+          <input type="hidden" name="update" value="1" />
+          <div class="cml-checkbox">
+            <input type="checkbox" id="translate-slugs" name="translate-slugs" value="1" <?php checked( get_option( 'cmlwoo_translate_slugs', 1 ) ) ?> />
+            <label for="translate-slugs"><span>||</span></label>
+          </div>
+          <label for="translate-slugs"><?php _e( 'Translate product category and tag base', 'cml4woo' ) ?>&nbsp;</label>
+          
+          <div class="cml-submit-button">
+            <?php submit_button() ?>
+          </div>
+          <br /><br /><br />
+        </form>
       </div>
 <?php
     }
@@ -252,12 +307,46 @@ EOT;
         'post_status' => 'publish',
         'posts_per_page' => -1,
        );
-      
+
       $posts = get_posts( $args );
       foreach( $posts as $post ) {
         $id = $post->ID;
 
         CMLPost::set_language( 0, $id );
       }
+      
+      cml_generate_mo_from_translations();
+    }
+    
+    function custom_attributes( $types ) {
+      global $wpdb;
+
+      $attributes = $wpdb->get_results( "SELECT * FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies" );
+
+      foreach ( $attributes as $attr ) {
+        CMLTranslations::add( "_cml4woo_attr_" . $attr->attribute_id . "_" . $attr->attribute_name, $attr->attribute_name, "_cml4woo_attr", true );
+      }
+
+      $types[ "_cml4woo_attr" ] = "Woocommerce: Custom attributes";
+      
+      return $types;
+    }
+    
+    function hide_default_lang( $array ) {
+      $array[] = '_cml4woo_attr';
+      
+      return $array;
+    }
+
+    //remove id from label
+    function change_label( $label, $type ) {
+      if( '_cml4woo_attr' !== $type ) return $label;
+      
+      preg_match( '/(\d*)_(.*)/', $label, $match );
+      if( count( $match ) == 3 )  {
+        return $match[ 2 ];
+      }
+      
+      return $label;
     }
 }

@@ -7,8 +7,6 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
 	public function __construct() {
     parent::__construct();
 
-    $this->_indexes = get_option( "cml_woo_indexes", array() );
-
     //Translate product link
     add_filter( 'post_type_link', array( & $this, 'translate_product_link' ), 10, 4 );
 
@@ -43,104 +41,74 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
     add_action( 'cml_is_single_page', array( & $this, 'is_shop_page' ), 10, 2 );
     add_action( 'cml_get_custom_page_id', array( & $this, 'get_shop_page_id' ), 10, 2 );
     
-    //translate category url
-    add_filter( 'woocommerce_taxonomy_args_product_cat', array( & $this, 'get_translated_slug' ), 10, 1 );
-    
-    //translate category title in flag link
-    add_filter( 'cml_get_the_link', array( & $this, 'translate_category_link' ), 10, 4 );
+    if( get_option( "cmlwoo_translate_slugs" ) ) {
+      //translate category url
+      add_filter( 'woocommerce_taxonomy_args_product_cat', array( & $this, 'get_translated_cat_slug' ), 10, 1 );
+      add_filter( 'woocommerce_taxonomy_args_product_tag', array( & $this, 'get_translated_tag_slug' ), 10, 1 );
+  
+      //translate category title in flag link
+      add_filter( 'cml_get_the_link', array( & $this, 'translate_category_link' ), 10, 4 );
+    }
   }
 
-	function get_meta( $id = null ) {
-		if( null == $id ) {
-			$id = get_the_ID();
-		}
+  function get_translated_content( $content ) {
+    if( ! defined( 'CECEPPA_DB_VERSION' ) ) return $content;
+    if( ! in_array( get_the_ID(), $this->_indexes ) ) return $content;
+    if( ! is_product() ) return $content;
 
-		$lang = CMLUtils::_get( "_forced_language_id", CMLLanguage::get_current_id() );
+    $meta = $this->get_meta();
 
-		if( ! isset( $this->_metas[ $id ][ $lang ] ) ) {
-			$meta = get_post_meta( $id, "_cml_woo_" . $lang, true );
+    $c = isset( $meta[ 'content' ] ) ? $meta[ 'content' ] : "";
+    if( !empty( $c ) ) $content = $c;
 
-			$this->_metas[ $id ][ $lang ] = $meta;
-		} else {
-			$meta = $this->_metas[ $id ][ $lang ];
-		}
+    $content = str_replace( ']]>', ']]&gt;', $content );
 
-		return $meta;
-	}
+    return $content;
+  }
 
-	function get_translated_title( $title, $id ) {
-		if( ! defined( 'CECEPPA_DB_VERSION' ) ) return $title;
+  function get_translated_description( $excerpt ) {
+      if( ! defined( 'CECEPPA_DB_VERSION' ) ) return $excerpt;
+      if( ! in_array( get_the_ID(), $this->_indexes ) ) return $excerpt;
 
-		//Get request language
-		$lang = CMLUtils::_get( "_forced_language_id", CMLLanguage::get_current_id() );
-		if( CMLLanguage::is_default( $lang ) ) return $title;
+      $meta = $this->get_meta();
 
-		//In the loop in can't use is_singular so I check if current $id exists
-		//in "woocommerce" post types
-		if( ! in_array( $id, $this->_indexes ) ) return $title;
+      $c = isset( $meta[ 'short' ] ) ? $meta[ 'short' ] : "";
+      if( !empty( $c ) ) $excerpt = $c;
 
-		$meta = $this->get_meta( $id );
-		if( empty( $meta ) ) return $title;
+      return $excerpt;
+  }
 
-		$c = isset( $meta[ 'title' ] ) ? $meta[ 'title' ] : "";
-		if( !empty( $c ) ) $title = $c;
+  function translate_product_link( $permalink, $post, $leavename, $sample ) {
+    if( ! defined( 'CECEPPA_DB_VERSION' ) ) return $permalink;
 
-		return $title;
-	}
+    $ps = CMLUtils::get_permalink_structure();
+    if( ! in_array( get_post_type( $post ), $this->_post_types ) ||
+        empty( $ps ) ||
+        is_preview() )  {
+      return $permalink;
+    }
 
-	function get_translated_content( $content ) {
-		if( ! defined( 'CECEPPA_DB_VERSION' ) ) return $content;
-		if( ! in_array( get_the_ID(), $this->_indexes ) ) return $content;
+    global $wp_rewrite;
 
-		$meta = $this->get_meta();
+    //Current slug
+    $lang = CMLUtils::_get( "_forced_language_id", CMLLanguage::get_current_id() );
 
-		$c = isset( $meta[ 'content' ] ) ? $meta[ 'content' ] : "";
-		if( !empty( $c ) ) $content = $c;
+    //Current language id
+    if( CMLLanguage::is_default( $lang ) ) return $permalink;
 
-		$content = str_replace( ']]>', ']]&gt;', $content );
-		return $content;
-	}
+    $url = explode( "/", untrailingslashit( $permalink ) );
+    unset( $url[ count( $url ) - 1 ] );
 
-	function get_translated_description( $excerpt ) {
-		if( ! defined( 'CECEPPA_DB_VERSION' ) ) return $excerpt;
-		if( ! in_array( get_the_ID(), $this->_indexes ) ) return $excerpt;
+    //Get translated title
+    $title = $this->get_translated_title( $post->post_title, $post->ID );
 
-		$meta = $this->get_meta();
+    $url[] = strtolower( sanitize_title( $title ) );
 
-		$c = isset( $meta[ 'short' ] ) ? $meta[ 'short' ] : "";
-		if( !empty( $c ) ) $excerpt = $c;
+    return join( "/", $url );
+  }
 
-		return $excerpt;
-	}
-
-	function translate_product_link( $permalink, $post, $leavename, $sample ) {
-      if( ! in_array( get_post_type( $post ), $this->_post_types ) ||
-          empty( CMLUtils::get_permalink_structure() ) ||
-          is_preview() )  {
-        return $permalink;
-      }
-
-      global $wp_rewrite;
-
-      //Current slug
-      $lang = CMLUtils::_get( "_forced_language_id", CMLLanguage::get_current_id() );
-
-      //Current language id
-      if( CMLLanguage::is_default( $lang ) ) return $permalink;
-
-      $url = explode( "/", untrailingslashit( $permalink ) );
-      unset( $url[ count( $url ) - 1 ] );
-
-      //Get translated title
-      $title = $this->get_translated_title( $post->post_title, $post->ID );
-
-      $url[] = strtolower( sanitize_title( $title ) );
-
-      return join( "/", $url );
-	}
-
-	/*
-	 * tell to wp the original name of produt to avoid 404 error
+  /*
+   * tell to wp the original name of produt to avoid 404 error
    */
   function change_product_name( $wp_query ) {
     global $wpdb;
@@ -207,7 +175,7 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
     return $wp_query;
   }
     
-  function get_translated_slug( $args ) {
+  function get_translated_cat_slug( $args ) {
     $lang = CMLUtils::_get( "_forced_language_id", CMLLanguage::get_current_id() );
     if( CMLLanguage::is_default( $lang ) ) return $args;
 
@@ -225,6 +193,24 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
     return $args;
   }
   
+  function get_translated_tag_slug( $args ) {
+    $lang = CMLUtils::_get( "_forced_language_id", CMLLanguage::get_current_id() );
+    if( CMLLanguage::is_default( $lang ) ) return $args;
+
+    $permalinks = CMLUtils::_get( "_cmlwoo_permalinks", null );
+    if( null == $permalinks ) {
+      $permalinks = get_option( "cmlwoo_permalinks", array() );
+
+      CMLUtils::_set( "cmlwoo_permalinks", $permalinks );
+    }
+
+    if( isset( $permalinks[ $lang ][ 'tag_base' ] ) ) {
+      $args[ 'rewrite' ][ 'slug' ] = $permalinks[ $lang ][ 'tag_base' ];
+    }
+
+    return $args;
+  }
+
   function translate_items_name( $items ) {
     if( CMLLanguage::is_default() ) return $items;
 
@@ -269,13 +255,16 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
   }
   
   function translate_category_link( $link, $attrs, $queried, $lang ) {
-    if( null == $queried || empty( CMLUtils::get_permalink_structure() ) ) return $link;
-    if( ! isset( $queried->taxonomy ) || $queried->taxonomy != "product_cat" ) return $link;
+    $ps = CMLUtils::get_permalink_structure();
+    if( null == $queried || empty( $ps ) ) return $link;
+    if( ! isset( $queried->taxonomy ) || ! in_array( $queried->taxonomy, array( "product_cat", "product_tag" ) ) ) return $link;
+
+    $field = ( $queried->taxonomy == 'product_cat' ) ? 'category_base' : 'tag_base';
 
     $permalinks = get_option( "woocommerce_permalinks", array() );
     if( empty( $permalinks ) ) return $link;
 
-    $c_base = $permalinks[ 'category_base' ];
+    $c_base = $permalinks[ $field ];
     if( empty( $c_base ) ) return $link;
 
     $home = trailingslashit( CMLUtils::get_home_url( CMLLanguage::get_slug( $lang ) ) );
@@ -289,7 +278,7 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
       CMLUtils::_set( "cmlwoo_permalinks", $permalinks );
     }
 
-    $base = @$p[ $lang ][ 'category_base' ];
+    $base = @$p[ $lang ][ $field ];
     if( empty( $base ) ) $base = $c_base;
 
     $l[ 0 ] = $base;

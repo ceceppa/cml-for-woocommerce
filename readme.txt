@@ -1,25 +1,32 @@
-=== Ceceppa Multilingua support to Customizr ===
+=== Ceceppa Multilingua support to WooCommerce ===
 Contributors: ceceppa
-Tags: multilingual, language, admin, tinymce, bilingual, widget, switcher, i18n, l10n, multilanguage, professional, translation, service, human, qtranslate, wpml, ztranslate, xtranslate, international, .mo file, .po file, localization, widget, post, customizr
+Tags: multilingual, language, admin, tinymce, bilingual, widget, switcher, i18n, l10n, multilanguage, professional, translation, service, human, qtranslate, wpml, ztranslate, xtranslate, international, .mo file, .po file, localization, widget, post, woocommerce
 Requires at least: 3.4.1
 Tested up to: 3.9
-Stable tag: 0.4
+Stable tag: 0.1
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Plugin to make Ceceppa Multilingua work with Customizr.
+Allows running fully multilingual e-commerce sites using WooCommerce and Ceceppa Multilingua.
 
 == Description ==
 
-This plugin allow user to translate "Customizr slider" with "Ceceppa Multilingua"-
+This plugin makes it possible to run fully multilingual e-commerce sites using WooCommerce and Ceceppa Multilingua.
+It makes products and store pages translatable, lets visitors switch languages and order products in their language.
 
 = Features =
 
-- Translate Customizr fields: Title text, Description text, Button text 
+- Translating product categories, tags and custom attributes
+- Translating media “Title” and “Alternative Text” for “Featured Image” and “Product Gallery”
+- Keeps the same language through the checkout process
+- Translate category and tag slug
 
 = Requires =
 
-Ceceppa Multilingua >= 1.4.10
+Ceceppa Multilingua >= 1.4.17
+
+= About =
+For more Information visit the [Plugin Homepage](http://www.alessandrosenese.eu/en/ceceppa-multilingua/ceceppa-multilingua-for-woocommerce)
 
 == Installation ==
 
@@ -35,16 +42,9 @@ Installation of this plugin is fairly easy:
 
 == Screenshots ==
 
+
+
 == Changelog ==
 
-= 0.4 =
-* Added support to "Featured" pages
-
-= 0.3 =
-* Fixed links
-
-= 0.2 =
-* Fixed readme.txt
-
 = 0.1 =
-* Add Customizr slider support
+* First release
