@@ -28,9 +28,10 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
      *
      * is_woocommerce_tag detect if current url is a woocommerce category
      */
-    add_filter( 'cml_is_custom_category', array( & $this, 'is_woocommerce_category' ), 10, 2 );
-    add_filter( 'cml_custom_category_name', array( & $this, 'get_category_name' ), 10, 2 );
-    add_filter( 'cml_change_wp_query_values', array( & $this, 'change_wp_query_values' ), 10, 2 );
+    //add_filter( 'cml_is_custom_category', array( & $this, 'is_woocommerce_category' ), 10, 2 );
+    //add_filter( 'cml_custom_category_name', array( & $this, 'get_category_name' ), 10, 2 );
+    //add_filter( 'cml_get_custom_taxonomy', array( & $this, 'get_product_taxonomy' ), 10, 2 );
+    //add_filter( 'cml_change_wp_query_values', array( & $this, 'change_wp_query_values' ), 10, 2 );
 
     //Translate cart product title
     add_filter( 'woocommerce_cart_item_product', array( & $this, 'translate_product' ), 10, 3 );
@@ -164,6 +165,14 @@ class Cml4WoocommerceFrontend extends Cml4Woocommerce {
       }
 
       return $wp_query->query[ 'product_cat' ];
+  }
+
+  function get_product_taxonomy( $tax, $wp_query ) {
+    if( $this->is_woocommerce_category( false, $wp_query ) ) {
+      return "product_cat";
+    }
+    
+    return $tax;
   }
 
   /*
@@ -312,9 +321,10 @@ function cmlwoo_get_translated_page_id( $id ) {
 
   return $linked;
 }
-
+/*
 $pages = array( 'cart', 'product', 'myaccount', 'shop', 'change_password', 'checkout' );
 foreach( $pages as $page ) {
   add_filter( 'woocommerce_get_' . $page . '_page_id', 'cmlwoo_get_translated_page_id', 10, 1 );
 }
+*/
 ?>

@@ -57,7 +57,7 @@ class Cml4WoocommerceAdmin extends Cml4Woocommerce {
 	function register_addon( & $addons ) {
       $addon = array(
                                   'addon' => 'woocommerce',
-                                  'title' => 'Woocommerce',
+                                  'title' => 'WooCommerce',
                                   );
       $addons[] = $addon;
 
@@ -71,7 +71,7 @@ class Cml4WoocommerceAdmin extends Cml4Woocommerce {
 echo <<< EOT
 	<div class="error">
 		<p>
-			<strong>Ceceppa Multilingua for Woocommerce</strong>
+			<strong>Ceceppa Multilingua for WooCommerce</strong>
 			<br /><br />
 			Hi there!	I'm just an addon for <a href="http://wordpress.org/plugins/ceceppa-multilingua/">Ceceppa Multilingua</a>, I can't work alone :(
 		</p>
@@ -96,11 +96,12 @@ EOT;
       
       //Empty base structure ( permalink )
       $woop = get_option( 'woocommerce_permalinks', array() );
-      if( ! isset( $woop[ 'category_base' ] ) || empty( $woop[ 'category_base' ] ) ) {
+      if( defined( 'WC_VERSION' ) &&
+	  ! isset( $woop[ 'category_base' ] ) || empty( $woop[ 'category_base' ] ) ) {
 ?>
 	<div class="error">
 		<p>
-			<strong>Ceceppa Multilingua for Woocommerce</strong>
+			<strong>Ceceppa Multilingua for WooCommerce</strong>
 			<br /><br />
 			<?php _e( 'Product category base field cannot be empty', 'cml4woo' ); ?>.
             <?php printf( __( 'Click <%s>here</a> to fix', 'cml4woo' ),
@@ -110,11 +111,12 @@ EOT;
 <?php
       }
 
-      if( ! isset( $woop[ 'tag_base' ] ) || empty( $woop[ 'tag_base' ] ) ) {
+      if( defined( 'WC_VERSION' ) &&
+	  ! isset( $woop[ 'tag_base' ] ) || empty( $woop[ 'tag_base' ] ) ) {
 ?>
 	<div class="error">
 		<p>
-			<strong>Ceceppa Multilingua for Woocommerce</strong>
+			<strong>Ceceppa Multilingua for WooCommerce</strong>
 			<br /><br />
 			<?php _e( 'Product tag base field cannot be empty', 'cml4woo' ); ?>.
             <?php printf( __( 'Click <%s>here</a> to fix', 'cml4woo' ),
@@ -127,7 +129,7 @@ EOT;
 
 	function add_meta_box() {
       add_meta_box( 'cml-box-cml4woo-addons', 
-                                  __( 'Woocommerce', 'woocommerce' ), 
+                                  __( 'WooCommerce', 'woocommerce' ), 
                                   array( & $this, 'meta_box' ), 
                                   'cml_box_addons_woocommerce' );
       
