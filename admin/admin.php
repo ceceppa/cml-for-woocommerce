@@ -8,6 +8,7 @@ class Cml4WoocommerceAdmin extends Cml4Woocommerce {
       parent::__construct();
 
       global $pagenow;
+
       if( 'options-permalink.php' == $pagenow ) {
         new Cml4WoocommercePermalink();
       }
