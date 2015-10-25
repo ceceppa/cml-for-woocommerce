@@ -5,7 +5,7 @@ class Cml4WoocommercePermalink {
     add_action( 'admin_init', array( $this, 'settings_init' ) );
     add_action( 'admin_init', array( $this, 'settings_save' ) );
   }
-  
+
   function settings_init() {
     if( ! defined( 'CECEPPA_DB_VERSION' ) ) return;
 
@@ -28,7 +28,7 @@ class Cml4WoocommercePermalink {
           'optional',                  				// settings section
           array( "lang" => $lang->id )
       );
-      
+
       //add_settings_field(
       //    'cmlwoo_product_attribute_slug_' . $lang->id,      	// id
       //    '<div class="cml-remove"></div>', 	      // setting title
@@ -39,26 +39,26 @@ class Cml4WoocommercePermalink {
       //);
     }
   }
-  
+
   function settings_save() {
     if( ! defined( 'CECEPPA_DB_VERSION' ) ) return;
 
     if ( isset( $_POST['permalink_structure'] ) ||
          isset( $_POST['category_base'] ) &&
          isset( $_POST['product_permalink'] ) ) {
-      
+
       $permalinks = get_option( "cmlwoo_permalinks", array() );
-      
+
       foreach( CMLLanguage::get_no_default() as $lang ) {
         $category_base = wc_clean( @$_POST[ 'cmlwoo_product_category_slug_' . $lang->id ] );
         $tag_base = wc_clean( @$_POST[ 'cmlwoo_product_tag_slug_' . $lang->id ] );
         $attribute_base = wc_clean( @$_POST[ 'cmlwoo_product_attribute_slug_' . $lang->id ] );
-        
+
         $permalinks[ $lang->id ][ 'category_base' ] = untrailingslashit( $category_base );
         $permalinks[ $lang->id ][ 'tag_base' ] = untrailingslashit( $tag_base );
         $permalinks[ $lang->id ][ 'attribute_base' ] = untrailingslashit( $attribute_base );
       }
-      
+
       update_option( "cmlwoo_permalinks", $permalinks );
     }
   }
@@ -88,7 +88,7 @@ class Cml4WoocommercePermalink {
     $lang = $args[ 'lang' ];
 
     $permalinks = get_option( "cmlwoo_permalinks", array() );
-    
+
     if( empty( $permalinks ) ) {
       $permalinks = get_option( 'woocommerce_permalinks' );
     } else {
